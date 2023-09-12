@@ -9,6 +9,18 @@ const connectionTest = require('./config/database').connectionTest;
 app.use(express.json());
 app.use(urlencoded({ extended: false }));
 
+//origin e referer
+app.use(function(req, res, next){
+	const referer = (req.headers.referer? new URL(req.headers.referer).host : req.headers.host);
+	const origin = (req.headers.origin? new URL(req.headers.origin).host : null);
+
+	if (req.headers.host == (origin || referer)){
+		next();
+	} else {
+		return next(new Error('Origem invalida'));
+	}
+});
+
 //initial
 app.use('/', require('./routes/initial/initial'));
 
@@ -33,6 +45,9 @@ app.use('/', require('./routes/broken_authentication_II/broken_authentication_II
 
 //broken_authentication III
 app.use('/', require('./routes/broken_authentication_III/broken_authentication_III'));
+
+//nova feature
+app.use('/', require('./routes/nova_feature/nova_feature'));
 
 app.use('/', require('./utils/aux_router'));
 
