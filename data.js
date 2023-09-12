@@ -1,12 +1,7 @@
-const { JsonWebTokenError } = require('jsonwebtoken');
-const jwt = require('jsonwebtoken');
-
 const dataBase = require('../config/connection').pool;
 
 exports.getUserById = async user_id => {
-
 	return await dataBase.query(
-
 		`SELECT * FROM user_data WHERE id_user = ${user_id}`
 	);
 };
