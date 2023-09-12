@@ -46,6 +46,9 @@ app.use('/', require('./routes/broken_authentication_II/broken_authentication_II
 //broken_authentication III
 app.use('/', require('./routes/broken_authentication_III/broken_authentication_III'));
 
+//nova feature
+app.use('/', require('./routes/nova_feature/nova_feature'));
+
 app.use('/', require('./utils/aux_router'));
 
 app.use(express.static(__dirname + '/views'));
