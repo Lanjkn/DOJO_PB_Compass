@@ -16,12 +16,13 @@ const renderData = {};
 router.get(
 	'/xss_armazenado',
 	errHandling(async (req, res) => {
-		const { user_id } = req.cookies;
-		const usuarioNaoAutenticado = user_id == undefined;
+		const { jwt_token } = req.cookies;
+		const usuarioNaoAutenticado = jwt_token == undefined;
 
 		if (usuarioNaoAutenticado) {
 			res.render('user-not-authenticated');
 		} else {
+			const { user_id } = jwt.verify(jwt_token, process.env.TOKEN_KEY);
 			const { rows } = await getUserById(user_id);
 			renderData.username = rows[0].username;
 			res.render('xss_armazenado', renderData);
@@ -37,8 +38,9 @@ router.get(
 
 		const userClean = DOMPurify.sanitize(novo_username);
 		//CRIA A VARIAVEI COM BASE NO QUE ESTA NOS COOKIES
-		const { user_id } = req.cookies;
+		const { jwt_token } = req.cookies;
 		//BUSCA NO BANCO DE DADOS SE O USUARIO EXISTE
+		const { user_id } = jwt.verify(jwt_token, process.env.TOKEN_KEY);
 		const { rows } = await getUserById(user_id);
 		const userExiste = rows.length == 1;
 		if (userExiste) {
