@@ -2,6 +2,8 @@ const router = require('express').Router();
 const { errHandling, getVulnType } = require('../../utils/utils');
 const cookieParser = require('cookie-parser');
 const { getUserById } = require('../../service/service');
+const jwt = require('jsonwebtoken');
+
 router.use(cookieParser());
 
 const renderData = {};
@@ -41,7 +43,14 @@ router.get(
 		vulnType = getVulnType()
 		renderData.vulnType = vulnType;
 		renderData.hasUsers = 'true';
-		res.cookie('user_id', user_id, cookies).render(
+
+		const token = jwt.sign(
+			{user_id: user_id},
+			process.env.TOKEN_KEY,
+			{expiresIn: '1h',}
+
+		);
+		res.cookie('jwt_token', token, cookies).render(
 			'initial_page',
 			renderData
 		);
@@ -55,7 +64,7 @@ router.get(
 		vulnType = getVulnType()
 		renderData.vulnType = vulnType;
 		renderData.hasUsers = 'false';
-		res.clearCookie('user_id').render('initial_page', renderData);
+		res.clearCookie('jwt_token').render('initial_page', renderData);
 	})
 );
 

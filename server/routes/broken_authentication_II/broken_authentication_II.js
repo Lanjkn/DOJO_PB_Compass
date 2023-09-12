@@ -2,6 +2,7 @@ const router = require('express').Router();
 const { errHandling } = require('../../utils/utils');
 const cookieParser = require('cookie-parser');
 const { getUserById, updateUsername } = require('../../service/service');
+const jwt = require('jsonwebtoken');
 
 router.use(cookieParser());
 
@@ -10,14 +11,16 @@ const renderData = {};
 router.get(
 	'/broken_authentication_II',
 	errHandling(async (req, res) => {
-		const { user_id } = req.cookies;
-		const usuarioNaoAutenticado = user_id == undefined;
+		const { jwt_token } = req.cookies;
+		const usuarioNaoAutenticado = jwt_token == undefined;
 
 		if (usuarioNaoAutenticado) {
 			res.render('user-not-authenticated');
 		} else {
+			const { user_id } = jwt.verify(jwt_token, process.env.TOKEN_KEY);
 			const { rows } = await getUserById(user_id);
 			renderData.username = rows[0].username;
+			renderData.user_id = user_id;
 			res.render('broken_authentication_II', renderData);
 		}
 	})
@@ -29,8 +32,10 @@ router.get(
 		//CRIA A VARIAVEI COM BASE NO QUE VEIO NA URL
 		const { novo_username } = req.query;
 		//CRIA A VARIAVEI COM BASE NO QUE ESTA NOS COOKIES
-		const { user_id } = req.cookies;
+		const { jwt_token } = req.cookies;
 		//BUSCA NO BANCO DE DADOS SE O USUARIO EXISTE
+		const { user_id } = jwt.verify(jwt_token, process.env.TOKEN_KEY);
+
 		const { rows } = await getUserById(user_id);
 		const userExiste = rows.length == 1;
 		if (userExiste) {
