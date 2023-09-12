@@ -4,6 +4,11 @@ const cookieParser = require('cookie-parser');
 const { render } = require('ejs');
 const { updateUsername, getUserById } = require('../../service/service');
 
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
+
 router.use(cookieParser());
 
 const renderData = {};
@@ -29,13 +34,15 @@ router.get(
 	errHandling(async (req, res) => {
 		//CRIA A VARIAVEI COM BASE NO QUE VEIO NA URL
 		const { novo_username } = req.query;
+
+		const userClean = DOMPurify.sanitize(novo_username);
 		//CRIA A VARIAVEI COM BASE NO QUE ESTA NOS COOKIES
 		const { user_id } = req.cookies;
 		//BUSCA NO BANCO DE DADOS SE O USUARIO EXISTE
 		const { rows } = await getUserById(user_id);
 		const userExiste = rows.length == 1;
 		if (userExiste) {
-			const { rows } = await updateUsername(novo_username, user_id);
+			const { rows } = await updateUsername(userClean, user_id);
 			renderData.username = rows[0].username;
 			res.render('xss_armazenado', renderData);
 		} else {
